@@ -14,7 +14,7 @@ ApplicationWindow
     visible: true
     width: 750
     height: 300
-    title: qsTr("fontColor for tcax")
+    title: qsTr("fontColor for TCAX")
     
     property bool initialized: false
     
@@ -36,7 +36,7 @@ ApplicationWindow
     MessageDialog
     {
         id: exitDialog
-        title: qsTr("Exit")
+        title: root.title
         text: qsTr("Are you sure to exit?")
         icon: StandardIcon.Question
         standardButtons: StandardButton.Yes | StandardButton.No | StandardButton.Cancel
