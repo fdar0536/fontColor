@@ -88,13 +88,13 @@ ApplicationWindow
         }
         else
         {
-            fontListModel.append
-            ({
-                 "family": qsTr("Failed to load font database.")
-             });
-            
             titleText.text = qsTr("Failed to load font database.");
-            fontComboBox.displayText =qsTr("Failed to load font database.");
+            titleText.color = "#ff0000"
+            fontComboBox.displayText = qsTr("Failed to load font database.");
+            copyFontFileNameBtn.enabled = false
+            copyFontFileBtn.enabled = false
+            copyFontNameBtn.enabled = false
+            fontComboBox.enabled = false
         }
     }
     
@@ -425,7 +425,7 @@ ApplicationWindow
                 visible: false
                 text: qsTr("Preview color, or click to select color.")
                 delay: 1000
-                timeout: 2500
+                timeout: 3000
             }
         }
         
@@ -465,15 +465,17 @@ ApplicationWindow
                 {
                     assColorTextTip.visible = false
                 }
+                
+                onClicked: clipboard.copyString(assColorText.text)
             }
             
             ToolTip
             {
                 id: assColorTextTip
                 visible: false
-                text: qsTr("Ass Color")
+                text: qsTr("Ass Color string, click to copy this")
                 delay: 1000
-                timeout: 2000
+                timeout: 3000
             }
         }
         
@@ -544,6 +546,5 @@ ApplicationWindow
             
             onClicked: utils.aboutQt()
         }
-        
     } //end Pane
 } //end ApplicationWindow

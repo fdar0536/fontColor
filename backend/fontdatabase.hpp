@@ -28,8 +28,6 @@ public:
     
     Q_INVOKABLE QString getFontStyle(int);
     
-    
-    
 private:
     
     int m_fontCount;
@@ -41,7 +39,6 @@ private:
     vector<QString> m_styleList;
     
     int main_process(vector<QString> &, vector<QString> &, vector<QString> &);
-    
 };
 
 #endif // FONTDATABASE_HPP

@@ -1,5 +1,3 @@
-#include <algorithm>
-
 #include "fontconfig/fontconfig.h"
 
 #include "fontdatabase.hpp"
@@ -60,6 +58,12 @@ int FontDatabase::main_process(vector<QString> &nameList, vector<QString> &fileL
     FcFontSet *fs = FcFontList(config, pat, os);
     if (fs == nullptr)
     {
+        return 1;
+    }
+    
+    if (fs->nfont == 0)
+    {
+        if (fs) FcFontSetDestroy(fs);
         return 1;
     }
     
