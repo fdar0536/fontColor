@@ -94,7 +94,6 @@ ApplicationWindow
             copyFontFileNameBtn.enabled = false
             copyFontFileBtn.enabled = false
             copyFontNameBtn.enabled = false
-            fontComboBox.enabled = false
         }
     }
     
