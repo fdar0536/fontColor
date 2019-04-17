@@ -180,7 +180,7 @@ ApplicationWindow
             
             onCurrentIndexChanged: function()
             {
-                var res = model.get(currentIndex).family;
+                var res = fontDatabase.getFontFamily(currentIndex);
                 displayText = res;
                 titleText.text = res;
                 titleText.font.family = res;
