@@ -184,8 +184,8 @@ ApplicationWindow
                 displayText = res;
                 titleText.text = res;
                 titleText.font.family = res;
-                fontPathInfo.text = fontDatabase.getFontFileName(currentIndex);
-                fontNameInfo.text = res;
+                fontFileInfo.text = fontDatabase.getFontFileName(currentIndex);
+                fontFamilyInfo.text = res;
                 fontStyleInfo.text = fontDatabase.getFontStyle(currentIndex);
             }
         } //end fontComboBox
@@ -303,7 +303,7 @@ ApplicationWindow
             
             onClicked:
             {
-                clipboard.copyString(fontListModel.get(fontComboBox.currentIndex).family);
+                clipboard.copyString(fontDatabase.getFontFamily(fontComboBox.currentIndex));
             }
         }
         
