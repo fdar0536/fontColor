@@ -220,7 +220,7 @@ int FontDatabase::main_process()
     string::size_type str_index = 0;
     while ((str_index = tmp_path.find("\\", str_index)) != string::npos)
     {
-        tmp_str.replace(index, 1, "/");
+        tmp_path.replace(str_index, 1, "/");
         ++str_index;
     }
 #else
