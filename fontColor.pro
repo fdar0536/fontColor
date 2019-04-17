@@ -1,13 +1,14 @@
-QT += qml quick quickcontrols2 widgets gui
+QT += qml quick quickcontrols2 widgets gui sql
 CONFIG += c++11
 
 DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
-        main.cpp \
-        backend/fontdatabase.cpp \
-        backend/clipboard.cpp \
-        backend/utils.cpp
+    main.cpp \
+    backend/fontdatabase.cpp \
+    backend/clipboard.cpp \
+    backend/utils.cpp \
+    backend/common.cpp
 
 RESOURCES += qml.qrc
 
@@ -29,4 +30,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     backend/fontdatabase.hpp \
     backend/clipboard.hpp \
-    backend/utils.hpp
+    backend/utils.hpp \
+    backend/common.hpp

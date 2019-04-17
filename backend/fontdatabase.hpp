@@ -3,15 +3,19 @@
 
 #include <vector>
 
-#include "QObject"
+#include "QSqlDatabase"
+#include "QSqlQuery"
+
+#include "common.hpp"
 
 using namespace std;
 
-class FontDatabase : public QObject
+class FontDatabase : public Common
 {
     Q_OBJECT
     
     Q_PROPERTY(int fontCount READ fontCount)
+    
 public:
     
     explicit FontDatabase(QObject *parent = nullptr);
@@ -32,13 +36,15 @@ private:
     
     int m_fontCount;
     
-    vector<QString> m_nameList;
+    QSqlDatabase m_db;
     
-    vector<QString> m_fileList;
+    int exec_db_int(QSqlQuery &, QString &);
     
-    vector<QString> m_styleList;
+    bool exec_db_string(QSqlQuery &, QString &);
     
-    int main_process(vector<QString> &, vector<QString> &, vector<QString> &);
+    bool exec_db_string(QSqlQuery &);
+    
+    int main_process();
 };
 
 #endif // FONTDATABASE_HPP
