@@ -16,7 +16,6 @@ public:
     Q_INVOKABLE void copyString(QString);
     
     Q_INVOKABLE void copyFile(QString);
-    
 };
 
 #endif // CLIPBOARD_HPP

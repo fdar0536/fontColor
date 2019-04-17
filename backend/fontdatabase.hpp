@@ -32,11 +32,33 @@ public:
     
     Q_INVOKABLE QString getFontStyle(int);
     
+    //Ascending order
+    Q_INVOKABLE bool font_asc_sort_init();
+    
+    Q_INVOKABLE int font_asc_sort_getID();
+    
+    Q_INVOKABLE QString font_asc_sort_getFamily();
+    
+    Q_INVOKABLE bool font_asc_sort_next();
+    
+    //Descending order
+    Q_INVOKABLE bool font_desc_sort_init();
+    
+    Q_INVOKABLE int font_desc_sort_getID();
+    
+    Q_INVOKABLE QString font_desc_sort_getFamily();
+    
+    Q_INVOKABLE bool font_desc_sort_next();
+    
 private:
     
     int m_fontCount;
     
     QSqlQuery m_query;
+    
+    QSqlQuery m_query_asc;
+    
+    QSqlQuery m_query_desc;
     
     QSqlDatabase m_db;
     
@@ -47,6 +69,12 @@ private:
     bool exec_db_string(QSqlQuery &);
     
     int main_process();
+    
+    int font_sort_getID(QSqlQuery &);
+    
+    QString font_sort_getFamily(QSqlQuery &);
+    
+    bool font_sort_next(QSqlQuery &);
 };
 
 #endif // FONTDATABASE_HPP

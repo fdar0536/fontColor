@@ -108,6 +108,64 @@ QString FontDatabase::getFontStyle(int input)
     }
 }
 
+//Ascending order
+bool FontDatabase::font_asc_sort_init()
+{
+    m_query_asc.finish();
+    m_query_asc = QSqlQuery(m_db);
+    QString query = "select id, font_family from fonts order by font_family asc";
+    if (exec_db_int(m_query_asc, query) != 0)
+    {
+        return false;
+    }
+    
+    return m_query_asc.first();
+}
+
+int FontDatabase::font_asc_sort_getID()
+{
+    return font_sort_getID(m_query_asc);
+}
+
+QString FontDatabase::font_asc_sort_getFamily()
+{
+    return font_sort_getFamily(m_query_asc);
+}
+
+bool FontDatabase::font_asc_sort_next()
+{
+    return font_sort_next(m_query_asc);
+}
+
+//Descending order
+bool FontDatabase::font_desc_sort_init()
+{
+    m_query_desc.finish();
+    m_query_desc = QSqlQuery(m_db);
+    QString query = "select id, font_family from fonts order by font_family desc";
+    if (exec_db_int(m_query_desc, query) != 0)
+    {
+        return false;
+    }
+    
+    return m_query_desc.first();
+}
+
+int FontDatabase::font_desc_sort_getID()
+{
+    return font_sort_getID(m_query_desc);
+}
+
+QString FontDatabase::font_desc_sort_getFamily()
+{
+    return font_sort_getFamily(m_query_desc);
+}
+
+bool FontDatabase::font_desc_sort_next()
+{
+    return font_sort_next(m_query_desc);
+}
+
 //private member function
 int FontDatabase::exec_db_int(QSqlQuery &m_query, QString &query)
 {
@@ -259,4 +317,19 @@ int FontDatabase::main_process()
     m_db.commit();
     if (fs) FcFontSetDestroy(fs);
     return 0;
+}
+
+int FontDatabase::font_sort_getID(QSqlQuery &query)
+{
+    return query.value(0).toInt();
+}
+
+QString FontDatabase::font_sort_getFamily(QSqlQuery &query)
+{
+    return query.value(1).toString();
+}
+
+bool FontDatabase::font_sort_next(QSqlQuery &query)
+{
+    return query.next();
 }

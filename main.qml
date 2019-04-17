@@ -64,30 +64,39 @@ ApplicationWindow
             initialized = true;
         }
         
-        if (fontDatabase.fontCount !== 0)
+        if (fontDatabase.fontCount !== 0 && fontDatabase.font_asc_sort_init() !== false)
         {
             var i;
+            var id;
             var fontfamily;
+            var style;
             for (i = 0; i < fontDatabase.fontCount; i++)
             {
-                fontfamily = fontDatabase.getFontFamily(i);
-                fontfamily += " (" + fontDatabase.getFontStyle(i) + ")";
+                id = fontDatabase.font_asc_sort_getID();
+                fontfamily = fontDatabase.font_asc_sort_getFamily();
+                style = fontDatabase.getFontStyle(id);
+                fontfamily += " (" + style + ")";
                 fontListModel.append
                 ({
-                     "family": fontfamily,
-                     "index": i
+                     "id": id,
+                     "family": fontfamily
                  });
+                
+                if (fontDatabase.font_asc_sort_next() === false)
+                {
+                    break;
+                }
             }
             
-            fontfamily = fontDatabase.getFontFamily(0);
+            fontfamily = fontDatabase.getFontFamily(fontListModel.get(0).id);
             titleText.text = fontfamily;
             titleText.font.family = fontfamily;
             fontFamilyInfo.text = fontfamily;
             
-            fontfamily += " (" + fontDatabase.getFontStyle(0) + ")";
+            fontfamily += " (" + fontDatabase.getFontStyle(fontListModel.get(0).id) + ")";
             fontComboBox.displayText = fontfamily;
-            fontFileInfo.text = fontDatabase.getFontFileName(0);
-            fontStyleInfo.text = fontDatabase.getFontStyle(0);
+            fontFileInfo.text = fontDatabase.getFontFileName(fontListModel.get(0).id);
+            fontStyleInfo.text = fontDatabase.getFontStyle(fontListModel.get(0).id);
         }
         else
         {
@@ -96,7 +105,7 @@ ApplicationWindow
             fontComboBox.displayText = qsTr("Failed to load font database.");
             copyFontFileNameBtn.enabled = false
             copyFontFileBtn.enabled = false
-            copyFontNameBtn.enabled = false
+            copyFontFamilyBtn.enabled = false
         }
     }
     
@@ -168,7 +177,7 @@ ApplicationWindow
             {
                 top: titleLabel.bottom
                 left: parent.left
-                right: parent.right
+                right: fontComboBoxAsc.left
             }
             
             model: ListModel
@@ -183,17 +192,126 @@ ApplicationWindow
             
             onCurrentIndexChanged: function()
             {
-                var res = fontDatabase.getFontFamily(currentIndex);
+                if (fontListModel.count === 0)
+                {
+                    return;
+                }
+                var res = fontDatabase.getFontFamily(fontListModel.get(currentIndex).id);
                 titleText.text = res;
                 titleText.font.family = res;
                 fontFamilyInfo.text = res;
                 
-                res += " (" + fontDatabase.getFontStyle(currentIndex) + ")";
+                res += " (" + fontDatabase.getFontStyle(fontListModel.get(currentIndex).id) + ")";
                 displayText = res;
-                fontFileInfo.text = fontDatabase.getFontFileName(currentIndex);
-                fontStyleInfo.text = fontDatabase.getFontStyle(currentIndex);
+                fontFileInfo.text = fontDatabase.getFontFileName(fontListModel.get(currentIndex).id);
+                fontStyleInfo.text = fontDatabase.getFontStyle(fontListModel.get(currentIndex).id);
             }
         } //end fontComboBox
+        
+        ButtonGroup
+        {
+            id: radioButtonGroup
+        }
+        
+        RadioButton
+        {
+            id: fontComboBoxAsc
+            text: qsTr("Ascending order")
+            anchors
+            {
+                right: fontComboBoxDesc.left
+                top: titleLabel.bottom
+            }
+            ButtonGroup.group: radioButtonGroup
+            checked: true
+            
+            onCheckedChanged:
+            {
+                var sort_init;
+                if (checked === false)
+                {
+                    sort_init = fontDatabase.font_desc_sort_init;
+                }
+                else
+                {
+                    sort_init = fontDatabase.font_asc_sort_init
+                }
+                
+                if (fontDatabase.fontCount !== 0 && sort_init() !== false)
+                {
+                    var sort_getID;
+                    var sort_getFamily;
+                    var sort_next;
+                    if (checked === false)
+                    {
+                        sort_getID = fontDatabase.font_desc_sort_getID;
+                        sort_getFamily = fontDatabase.font_desc_sort_getFamily;
+                        sort_next = fontDatabase.font_desc_sort_next;
+                    }
+                    else
+                    {
+                        sort_getID = fontDatabase.font_asc_sort_getID;
+                        sort_getFamily = fontDatabase.font_asc_sort_getFamily;
+                        sort_next = fontDatabase.font_asc_sort_next;
+                    }
+                    var i;
+                    var id;
+                    var fontfamily;
+                    var style;
+                    fontListModel.clear();
+                    for (i = 0; i < fontDatabase.fontCount; i++)
+                    {
+                        id = sort_getID();
+                        fontfamily = sort_getFamily();
+                        style = fontDatabase.getFontStyle(id);
+                        fontfamily += " (" + style + ")";
+                        fontListModel.append
+                        ({
+                             "id": id,
+                             "family": fontfamily
+                         });
+                        
+                        if (sort_next() === false)
+                        {
+                            break;
+                        }
+                    }
+                    
+                    fontfamily = fontDatabase.getFontFamily(fontListModel.get(0).id);
+                    titleText.text = fontfamily;
+                    titleText.font.family = fontfamily;
+                    fontFamilyInfo.text = fontfamily;
+                    
+                    fontfamily += " (" + fontDatabase.getFontStyle(fontListModel.get(0).id) + ")";
+                    fontComboBox.displayText = fontfamily;
+                    fontFileInfo.text = fontDatabase.getFontFileName(fontListModel.get(0).id);
+                    fontStyleInfo.text = fontDatabase.getFontStyle(fontListModel.get(0).id);
+                    fontComboBox.currentIndex = 0;
+                }
+                else
+                {
+                    titleText.text = qsTr("Failed to load font database.");
+                    titleText.color = "#ff0000"
+                    fontComboBox.displayText = qsTr("Failed to load font database.");
+                    copyFontFileNameBtn.enabled = false
+                    copyFontFileBtn.enabled = false
+                    copyFontFamilyBtn.enabled = false
+                }
+            }
+        }
+        
+        RadioButton
+        {
+            id: fontComboBoxDesc
+            text: qsTr("Descending order")
+            anchors
+            {
+                right: parent.right
+                top: titleLabel.bottom
+            }
+            
+            ButtonGroup.group: radioButtonGroup
+        }
         
         //file
         TitleText
@@ -235,7 +353,7 @@ ApplicationWindow
             
             onClicked: function()
             {
-                clipboard.copyString(fontDatabase.getFontFileName(fontComboBox.currentIndex));
+                clipboard.copyString(fontDatabase.getFontFileName(fontListModel.get(fontComboBox.currentIndex).id));
             }
         }
         
@@ -264,7 +382,7 @@ ApplicationWindow
             
             onClicked:
             {
-                clipboard.copyFile(fontDatabase.getFontFilePath(fontComboBox.currentIndex));
+                clipboard.copyFile(fontDatabase.getFontFilePath(fontListModel.get(fontComboBox.currentIndex).id));
             }
         }
         
@@ -308,7 +426,7 @@ ApplicationWindow
             
             onClicked:
             {
-                clipboard.copyString(fontDatabase.getFontFamily(fontComboBox.currentIndex));
+                clipboard.copyString(fontDatabase.getFontFamily(fontListModel.get(fontComboBox.currentIndex).id));
             }
         }
         
