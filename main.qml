@@ -82,8 +82,8 @@ ApplicationWindow
             titleText.text = fontfamily;
             fontComboBox.displayText = fontfamily;
             titleText.font.family = fontfamily;
-            fontPathInfo.text = fontDatabase.getFontFileName(0);
-            fontNameInfo.text = fontfamily;
+            fontFileInfo.text = fontDatabase.getFontFileName(0);
+            fontFamilyInfo.text = fontfamily;
             fontStyleInfo.text = fontDatabase.getFontStyle(0);
         }
         else
@@ -190,11 +190,11 @@ ApplicationWindow
             }
         } //end fontComboBox
         
-        //path
+        //file
         TitleText
         {
-            id: fontPathTitle
-            text: qsTr("Font file name: ")
+            id: fontFileTitle
+            text: qsTr("Font file: ")
             pointSize: 15
             anchors
             {
@@ -206,11 +206,11 @@ ApplicationWindow
         
         TitleText
         {
-            id: fontPathInfo
+            id: fontFileInfo
             pointSize: 15
             anchors
             {
-                left: fontPathTitle.right
+                left: fontFileTitle.right
                 right: copyFontFileNameBtn.left
                 top: fontComboBox.bottom
                 bottom: copyFontFileNameBtn.bottom
@@ -263,41 +263,41 @@ ApplicationWindow
             }
         }
         
-        //name
+        //family
         TitleText
         {
-            id: fontNameTitle
-            text: qsTr("Font name: ")
+            id: fontFamilytTitle
+            text: qsTr("Font family: ")
             pointSize: 15
             anchors
             {
                 left: parent.left
-                top: copyFontNameBtn.top
-                bottom: copyFontNameBtn.bottom
+                top: copyFontFamilyBtn.top
+                bottom: copyFontFamilyBtn.bottom
             }
         }
         
         TitleText
         {
-            id: fontNameInfo
+            id: fontFamilyInfo
             pointSize: 15
             anchors
             {
-                left: fontNameTitle.right
-                right: copyFontFileNameBtn.left
-                top: copyFontNameBtn.top
-                bottom: copyFontNameBtn.bottom
+                left: fontFamilytTitle.right
+                right: copyFontFamilyBtn.left
+                top: copyFontFamilyBtn.top
+                bottom: copyFontFamilyBtn.bottom
             }
         }
         
         ToolTipButton
         {
-            id: copyFontNameBtn
-            text: qsTr("Copy font's name")
-            tooltip: qsTr("Copy font's name")
+            id: copyFontFamilyBtn
+            text: qsTr("Copy font family")
+            tooltip: qsTr("Copy font family")
             anchors
             {
-                top: fontPathInfo.bottom
+                top: fontFileInfo.bottom
                 right: parent.right
             }
             
@@ -338,11 +338,11 @@ ApplicationWindow
         {
             id: styleRectangle
             width: 0
-            height: copyFontNameBtn.height
+            height: copyFontFamilyBtn.height
             anchors
             {
                 right: parent.right
-                top: copyFontNameBtn.bottom
+                top: copyFontFamilyBtn.bottom
             }
         }
         
