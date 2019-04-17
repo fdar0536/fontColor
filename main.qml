@@ -68,22 +68,25 @@ ApplicationWindow
         {
             var i;
             var fontfamily;
-            var file;
             for (i = 0; i < fontDatabase.fontCount; i++)
             {
                 fontfamily = fontDatabase.getFontFamily(i);
+                fontfamily += " (" + fontDatabase.getFontStyle(i) + ")";
                 fontListModel.append
                 ({
-                     "family": fontfamily
+                     "family": fontfamily,
+                     "index": i
                  });
             }
             
             fontfamily = fontDatabase.getFontFamily(0);
             titleText.text = fontfamily;
-            fontComboBox.displayText = fontfamily;
             titleText.font.family = fontfamily;
-            fontFileInfo.text = fontDatabase.getFontFileName(0);
             fontFamilyInfo.text = fontfamily;
+            
+            fontfamily += " (" + fontDatabase.getFontStyle(0) + ")";
+            fontComboBox.displayText = fontfamily;
+            fontFileInfo.text = fontDatabase.getFontFileName(0);
             fontStyleInfo.text = fontDatabase.getFontStyle(0);
         }
         else
@@ -181,11 +184,13 @@ ApplicationWindow
             onCurrentIndexChanged: function()
             {
                 var res = fontDatabase.getFontFamily(currentIndex);
-                displayText = res;
                 titleText.text = res;
                 titleText.font.family = res;
-                fontFileInfo.text = fontDatabase.getFontFileName(currentIndex);
                 fontFamilyInfo.text = res;
+                
+                res += " (" + fontDatabase.getFontStyle(currentIndex) + ")";
+                displayText = res;
+                fontFileInfo.text = fontDatabase.getFontFileName(currentIndex);
                 fontStyleInfo.text = fontDatabase.getFontStyle(currentIndex);
             }
         } //end fontComboBox
