@@ -36,6 +36,8 @@ private:
     
     int m_fontCount;
     
+    QSqlQuery m_query;
+    
     QSqlDatabase m_db;
     
     int exec_db_int(QSqlQuery &, QString &);

@@ -37,7 +37,6 @@ int FontDatabase::fontCount() const
 
 QString FontDatabase::getFontFamily(int input)
 {
-    QSqlQuery m_query(m_db);
     QString query = "select font_family from fonts where id=" + QString::number(input);
     if (!exec_db_string(m_query, query))
     {
@@ -56,7 +55,6 @@ QString FontDatabase::getFontFamily(int input)
 
 QString FontDatabase::getFontFilePath(int input)
 {
-    QSqlQuery m_query(m_db);
     QString query = "select font_file from fonts where id=" + QString::number(input);
     if (!exec_db_string(m_query, query))
     {
@@ -75,7 +73,6 @@ QString FontDatabase::getFontFilePath(int input)
 
 QString FontDatabase::getFontFileName(int input)
 {
-    QSqlQuery m_query(m_db);
     QString query = "select font_file from fonts where id=" + QString::number(input);
     if (!exec_db_string(m_query, query))
     {
@@ -95,7 +92,6 @@ QString FontDatabase::getFontFileName(int input)
 
 QString FontDatabase::getFontStyle(int input)
 {
-    QSqlQuery m_query(m_db);
     QString query = "select font_style from fonts where id=" + QString::number(input);
     if (!exec_db_string(m_query, query))
     {
@@ -177,7 +173,7 @@ int FontDatabase::main_process()
     if (QFile::exists(db_path))
     {
         QFile file(db_path);
-        if (!file.remove()) 
+        if (!file.remove())
         {
             if (m_debug) qDebug() << m_program_name << ": Fail to remove database";
             return 1;
@@ -193,7 +189,7 @@ int FontDatabase::main_process()
         return 1;
     }
     
-    QSqlQuery m_query(m_db);
+    m_query = QSqlQuery(m_db);
     
     QString query;
     query = "drop table if exists fonts";
