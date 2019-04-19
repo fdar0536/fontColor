@@ -200,6 +200,7 @@ void FontDatabase::font_desc_sort()
             break;
         }
     }
+    
     endResetModel();
 }
 
