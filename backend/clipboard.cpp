@@ -43,6 +43,6 @@ void Clipboard::copyFile(QString input)
     mimeData->setUrls({QUrl::fromLocalFile(input)});
     QGuiApplication::clipboard()->setMimeData(mimeData);
     
-    //Don's free mimeData here, or crash.
+    //Don't free mimeData here, or crash.
 #endif
 }
