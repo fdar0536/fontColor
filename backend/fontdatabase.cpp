@@ -16,10 +16,26 @@
 using namespace std;
 
 FontDatabase::FontDatabase(QObject *parent) :
-    Common(parent),
-    m_fontCount(0)
+    QAbstractItemModel(parent),
+    m_fontCount(0),
+    m_fontFamilyList(QList<QString>()),
+    m_fontIndex(QList<int>()),
+    m_debug(false),
+    m_program_name("")
 {
-    if (main_process() != 0)
+    QStringList args = QApplication::arguments();
+    if (args.count() > 1) //args.at(0) is program's file name
+    {
+        //arguments have been filterd in the main function
+        m_debug = true;
+        m_program_name = args.at(0);
+    }
+    
+    if (main_process() == 0)
+    {
+        font_asc_sort();
+    }
+    else
     {
         m_fontCount = 0;
     }
@@ -108,62 +124,141 @@ QString FontDatabase::getFontStyle(int input)
     }
 }
 
-//Ascending order
-bool FontDatabase::font_asc_sort_init()
+void FontDatabase::font_asc_sort()
 {
     m_query_asc.finish();
     m_query_asc = QSqlQuery(m_db);
     QString query = "select id, font_family from fonts order by font_family asc";
     if (exec_db_int(m_query_asc, query) != 0)
     {
-        return false;
+        m_fontCount = 0;
+        return;
     }
     
-    return m_query_asc.first();
+    if (!m_query_asc.first())
+    {
+        m_fontCount = 0;
+        return;
+    }
+    
+    beginResetModel();
+    m_fontFamilyList.clear();
+    m_fontIndex.clear();
+    m_fontFamilyList.reserve(m_fontCount);
+    m_fontIndex.reserve(m_fontCount);
+    int index(0);
+    for (index = 0; index < m_fontCount; ++index)
+    {
+        int id = font_sort_getID(m_query_asc);
+        QString family = font_sort_getFamily(m_query_asc);
+        family += (" (" + getFontStyle(id) + ")");
+        m_fontIndex.append(id);
+        m_fontFamilyList.append(family);
+        
+        if (!m_query_asc.next())
+        {
+            break;
+        }
+    }
+    
+    endResetModel();
 }
 
-int FontDatabase::font_asc_sort_getID()
-{
-    return font_sort_getID(m_query_asc);
-}
-
-QString FontDatabase::font_asc_sort_getFamily()
-{
-    return font_sort_getFamily(m_query_asc);
-}
-
-bool FontDatabase::font_asc_sort_next()
-{
-    return font_sort_next(m_query_asc);
-}
-
-//Descending order
-bool FontDatabase::font_desc_sort_init()
+void FontDatabase::font_desc_sort()
 {
     m_query_desc.finish();
     m_query_desc = QSqlQuery(m_db);
     QString query = "select id, font_family from fonts order by font_family desc";
     if (exec_db_int(m_query_desc, query) != 0)
     {
-        return false;
+        m_fontCount = 0;
+        return;
     }
     
-    return m_query_desc.first();
+    if (!m_query_desc.first())
+    {
+        m_fontCount = 0;
+        return;
+    }
+    
+    beginResetModel();
+    m_fontFamilyList.clear();
+    m_fontIndex.clear();
+    m_fontFamilyList.reserve(m_fontCount);
+    m_fontIndex.reserve(m_fontCount);
+    int index(0);
+    for (index = 0; index < m_fontCount; ++index)
+    {
+        int id = font_sort_getID(m_query_desc);
+        QString family = font_sort_getFamily(m_query_desc);
+        family += (" (" + getFontStyle(id) + ")");
+        m_fontIndex.append(id);
+        m_fontFamilyList.append(family);
+        
+        if (!m_query_desc.next())
+        {
+            break;
+        }
+    }
+    endResetModel();
 }
 
-int FontDatabase::font_desc_sort_getID()
+int FontDatabase::getCurrentFontIndex(int input)
 {
-    return font_sort_getID(m_query_desc);
+    return m_fontIndex.at(input);
 }
 
-QString FontDatabase::font_desc_sort_getFamily()
+QString FontDatabase::getCurrentFontFamily(int input)
 {
-    return font_sort_getFamily(m_query_desc);
+    if (input < 0 || input > m_fontCount) return QString("");
+    return m_fontFamilyList.at(input);
 }
 
-bool FontDatabase::font_desc_sort_next()
+//pure virtual functions
+int FontDatabase::rowCount(const QModelIndex &parent) const
 {
-    return font_sort_next(m_query_desc);
+    Q_UNUSED(parent)
+    return m_fontCount;
+}
+
+int FontDatabase::columnCount(const QModelIndex &parent) const
+{
+    Q_UNUSED(parent)
+    return 2;
+}
+
+QVariant FontDatabase::data(const QModelIndex &index, int role) const
+{
+    if (index.row() < 0 ||
+        index.row() >= m_fontCount ||
+        index.column() < 0 ||
+        index.column() > 2)
+        return QVariant();
+    
+    if (role == IdRole)
+        return m_fontIndex.at(index.row());
+    else if (role == FamilyRole)
+        return m_fontFamilyList.at(index.row());
+    return QVariant();
+}
+
+QModelIndex FontDatabase::index(int, int, const QModelIndex &) const
+{
+    return QModelIndex();
+}
+
+QModelIndex FontDatabase::parent(const QModelIndex &) const
+{
+    return QModelIndex();
+}
+
+//protected menber function
+QHash<int, QByteArray> FontDatabase::roleNames() const
+{
+    QHash<int, QByteArray> roles;
+    roles[IdRole] = "id";
+    roles[FamilyRole] = "family";
+    return roles;
 }
 
 //private member function
@@ -327,9 +422,4 @@ int FontDatabase::font_sort_getID(QSqlQuery &query)
 QString FontDatabase::font_sort_getFamily(QSqlQuery &query)
 {
     return query.value(1).toString();
-}
-
-bool FontDatabase::font_sort_next(QSqlQuery &query)
-{
-    return query.next();
 }

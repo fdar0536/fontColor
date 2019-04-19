@@ -5,12 +5,11 @@
 
 #include "QSqlDatabase"
 #include "QSqlQuery"
-
-#include "common.hpp"
+#include "QAbstractItemModel"
 
 using namespace std;
 
-class FontDatabase : public Common
+class FontDatabase : public QAbstractItemModel
 {
     Q_OBJECT
     
@@ -18,9 +17,15 @@ class FontDatabase : public Common
     
 public:
     
+    enum FontRoles
+    {
+        IdRole = Qt::UserRole + 1,
+        FamilyRole
+    };
+    
     explicit FontDatabase(QObject *parent = nullptr);
     
-    ~FontDatabase();
+    ~FontDatabase() override;
     
     int fontCount() const;
     
@@ -32,23 +37,28 @@ public:
     
     Q_INVOKABLE QString getFontStyle(int);
     
-    //Ascending order
-    Q_INVOKABLE bool font_asc_sort_init();
+    Q_INVOKABLE void font_asc_sort();
     
-    Q_INVOKABLE int font_asc_sort_getID();
+    Q_INVOKABLE void font_desc_sort();
     
-    Q_INVOKABLE QString font_asc_sort_getFamily();
+    Q_INVOKABLE int getCurrentFontIndex(int);
     
-    Q_INVOKABLE bool font_asc_sort_next();
+    Q_INVOKABLE QString getCurrentFontFamily(int);
     
-    //Descending order
-    Q_INVOKABLE bool font_desc_sort_init();
+    //pure virtual functions
+    Q_INVOKABLE int rowCount(const QModelIndex & = QModelIndex()) const override;
     
-    Q_INVOKABLE int font_desc_sort_getID();
+    Q_INVOKABLE int columnCount(const QModelIndex & = QModelIndex()) const override;
     
-    Q_INVOKABLE QString font_desc_sort_getFamily();
+    Q_INVOKABLE QVariant data(const QModelIndex &, int = Qt::DisplayRole) const override;
     
-    Q_INVOKABLE bool font_desc_sort_next();
+    QModelIndex index(int, int, const QModelIndex & = QModelIndex()) const override;
+    
+    QModelIndex parent(const QModelIndex &) const override;
+    
+protected:
+    
+    QHash<int, QByteArray> roleNames() const override;
     
 private:
     
@@ -74,7 +84,13 @@ private:
     
     QString font_sort_getFamily(QSqlQuery &);
     
-    bool font_sort_next(QSqlQuery &);
+    QList<QString> m_fontFamilyList;
+    
+    QList<int> m_fontIndex;
+    
+    bool m_debug;
+    
+    QString m_program_name;
 };
 
 #endif // FONTDATABASE_HPP
