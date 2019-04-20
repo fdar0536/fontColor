@@ -7,7 +7,8 @@ SOURCES += \
     main.cpp \
     backend/fontdatabase.cpp \
     backend/clipboard.cpp \
-    backend/utils.cpp
+    backend/utils.cpp \
+    backend/sqlhandler.cpp
 
 RESOURCES += qml.qrc
 
@@ -29,4 +30,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     backend/fontdatabase.hpp \
     backend/clipboard.hpp \
-    backend/utils.hpp
+    backend/utils.hpp \
+    backend/sqlhandler.hpp

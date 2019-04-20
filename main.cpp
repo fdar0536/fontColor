@@ -5,6 +5,7 @@
 #include "QQmlApplicationEngine"
 #include "QQuickStyle"
 #include "QIcon"
+#include "QMetaType"
 
 #include "backend/fontdatabase.hpp"
 #include "backend/clipboard.hpp"
@@ -36,6 +37,8 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/fontColor.ico"));
     
+    qRegisterMetaType<QList<QString>>("QList<QString>&");
+    qRegisterMetaType<QList<int>>("QList<int>&");
     qmlRegisterType<FontDatabase>("backend.FontDatabase", 0, 1, "FontDatabase");
     qmlRegisterType<Clipboard>("backend.Clipboard", 0, 1, "Clipboard");
     qmlRegisterType<Utils>("backend.Utils", 0, 1, "Utils");

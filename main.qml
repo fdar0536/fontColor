@@ -21,6 +21,20 @@ ApplicationWindow
     FontDatabase
     {
         id: fontDatabase
+        
+        onSortingDone:
+        {
+            if (fontDatabase.fontCount !== 0)
+            {
+                ui_enabler(true);
+                updateHook(0, 0);
+                busyIndicator.running = false;
+            }
+            else
+            {
+                loading_failed();
+            }
+        }
     }
     
     Clipboard
@@ -47,9 +61,35 @@ ApplicationWindow
         }
     }
     
-    function updateHook(input)
+    BusyIndicator
     {
-        var index = fontDatabase.getCurrentFontIndex(input);
+        id: busyIndicator
+        anchors.centerIn: mainPane
+        width: 50
+        height: 50
+        z: 50
+        running: false
+    }
+    
+    function ui_enabler(input)
+    {
+        copyFontFileNameBtn.enabled = input;
+        copyFontFileBtn.enabled = input;
+        copyFontFamilyBtn.enabled = input;
+        fontComboBoxAsc.enabled = input;
+        fontComboBoxDesc.enabled = input;
+    }
+    
+    function loading_failed()
+    {
+        titleText.text = qsTr("Failed to load font database.");
+        titleText.color = "#ff0000"
+        fontComboBox.displayText = qsTr("Failed to load font database.");
+    }
+    
+    function updateHook(input1, input2)
+    {
+        var index = fontDatabase.getCurrentFontIndex(input1);
         var fontfamily = fontDatabase.getFontFamily(index);
         titleText.text = fontfamily;
         titleText.font.family = fontfamily;
@@ -60,6 +100,11 @@ ApplicationWindow
         fontComboBox.displayText = fontfamily;
         fontFileInfo.text = fontDatabase.getFontFileName(index);
         fontStyleInfo.text = style;
+        
+        if (input2 === 0)
+        {
+            fontComboBox.currentIndex = 0;
+        }
     }
     
     onClosing:
@@ -79,23 +124,21 @@ ApplicationWindow
             initialized = true;
         }
         
+        ui_enabler(false);
         if (fontDatabase.fontCount !== 0)
         {
-            updateHook(0);
+            fontDatabase.font_asc_sort();
+            busyIndicator.running = true;
         }
         else
         {
-            titleText.text = qsTr("Failed to load font database.");
-            titleText.color = "#ff0000"
-            fontComboBox.displayText = qsTr("Failed to load font database.");
-            copyFontFileNameBtn.enabled = false
-            copyFontFileBtn.enabled = false
-            copyFontFamilyBtn.enabled = false
+            loading_failed();
         }
     }
     
     Pane
     {
+        id: mainPane
         x: 30
         y: 20
         width: parent.width - x * 2
@@ -179,7 +222,7 @@ ApplicationWindow
                     return;
                 }
                 
-                updateHook(currentIndex);
+                updateHook(currentIndex, -1);
             }
         } //end fontComboBox
         
@@ -202,6 +245,7 @@ ApplicationWindow
             
             onCheckedChanged:
             {
+                ui_enabler(false);
                 if (fontDatabase.fontCount !== 0)
                 {
                     if (checked === false)
@@ -213,17 +257,11 @@ ApplicationWindow
                         fontDatabase.font_asc_sort();
                     }
                     
-                    updateHook(0);
-                    fontComboBox.currentIndex = 0;
+                    busyIndicator.running = true;
                 }
                 else
                 {
-                    titleText.text = qsTr("Failed to load font database.");
-                    titleText.color = "#ff0000"
-                    fontComboBox.displayText = qsTr("Failed to load font database.");
-                    copyFontFileNameBtn.enabled = false
-                    copyFontFileBtn.enabled = false
-                    copyFontFamilyBtn.enabled = false
+                    loading_failed();
                 }
             }
         }
@@ -281,7 +319,7 @@ ApplicationWindow
             
             onClicked: function()
             {
-                clipboard.copyString(fontDatabase.getFontFileName(fontListModel.get(fontComboBox.currentIndex).id));
+                clipboard.copyString(fontDatabase.getFontFileName(fontDatabase.getCurrentFontIndex(fontComboBox.currentIndex)));
             }
         }
         
@@ -310,7 +348,7 @@ ApplicationWindow
             
             onClicked:
             {
-                clipboard.copyFile(fontDatabase.getFontFilePath(fontListModel.get(fontComboBox.currentIndex).id));
+                clipboard.copyFile(fontDatabase.getFontFilePath(fontDatabase.getCurrentFontIndex(fontComboBox.currentIndex)));
             }
         }
         
@@ -354,7 +392,7 @@ ApplicationWindow
             
             onClicked:
             {
-                clipboard.copyString(fontDatabase.getFontFamily(fontListModel.get(fontComboBox.currentIndex).id));
+                clipboard.copyString(fontDatabase.getFontFamily(fontDatabase.getCurrentFontIndex(fontComboBox.currentIndex)));
             }
         }
         

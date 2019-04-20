@@ -3,9 +3,9 @@
 
 #include <vector>
 
-#include "QSqlDatabase"
-#include "QSqlQuery"
 #include "QAbstractItemModel"
+
+#include "sqlhandler.hpp"
 
 using namespace std;
 
@@ -56,6 +56,14 @@ public:
     
     QModelIndex parent(const QModelIndex &) const override;
     
+signals:
+    
+    void sortingDone();
+    
+public slots:
+    
+    void handle_sorting_done(QList<QString> &, QList<int> &);
+    
 protected:
     
     QHash<int, QByteArray> roleNames() const override;
@@ -64,25 +72,11 @@ private:
     
     int m_fontCount;
     
-    QSqlQuery m_query;
+    SQLHandler *m_sql;
     
-    QSqlQuery m_query_asc;
-    
-    QSqlQuery m_query_desc;
-    
-    QSqlDatabase m_db;
-    
-    int exec_db_int(QSqlQuery &, QString &);
-    
-    bool exec_db_string(QSqlQuery &, QString &);
-    
-    bool exec_db_string(QSqlQuery &);
+    void init();
     
     int main_process();
-    
-    int font_sort_getID(QSqlQuery &);
-    
-    QString font_sort_getFamily(QSqlQuery &);
     
     QList<QString> m_fontFamilyList;
     
