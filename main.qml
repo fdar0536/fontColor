@@ -68,11 +68,19 @@ ApplicationWindow
         width: 50
         height: 50
         z: 50
-        running: false
+        running: true
     }
     
     function ui_enabler(input)
     {
+        if (input === false)
+        {
+            titleText.text = qsTr("Loading...");
+            fontFamilyInfo.text = ""
+            fontFileInfo.text = "";
+            fontStyleInfo.text = "";
+        }
+        
         copyFontFileNameBtn.enabled = input;
         copyFontFileBtn.enabled = input;
         copyFontFamilyBtn.enabled = input;
@@ -128,7 +136,6 @@ ApplicationWindow
         if (fontDatabase.fontCount !== 0)
         {
             fontDatabase.font_asc_sort();
-            busyIndicator.running = true;
         }
         else
         {
