@@ -153,6 +153,9 @@ void FontDatabase::font_desc_sort()
     beginResetModel();
     QString query = "select id, font_family from fonts order by font_family desc";
     m_sql->setqueryString(query);
+    m_sql->setfontFamilyList(m_fontFamilyList);
+    m_sql->setfontIndex(m_fontIndex);
+    m_sql->setfontCount(m_fontCount);
     QThreadPool::globalInstance()->start(m_sql);
 }
 
