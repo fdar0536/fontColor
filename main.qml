@@ -91,8 +91,9 @@ ApplicationWindow
     function loading_failed()
     {
         titleText.text = qsTr("Failed to load font database.");
-        titleText.color = "#ff0000"
+        titleText.color = "#ff0000";
         fontComboBox.displayText = qsTr("Failed to load font database.");
+        busyIndicator.running = false;
     }
     
     function updateHook(input1, input2)
