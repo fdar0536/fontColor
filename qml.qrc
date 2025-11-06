@@ -1,8 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>main.qml</file>
-        <file>components/TitleText.qml</file>
-        <file>components/ToolTipButton.qml</file>
         <file>fontColor.ico</file>
     </qresource>
 </RCC>
