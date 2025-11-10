@@ -6,6 +6,7 @@
 #include "QQuickStyle"
 #include "QIcon"
 #include "QMetaType"
+#include "QQuickWindow"
 
 #include "backend/fontdatabase.hpp"
 #include "backend/clipboard.hpp"
@@ -29,6 +30,13 @@ int main(int argc, char *argv[])
     engine.load(QUrl("qrc:/FC/main.qml"));
     if (engine.rootObjects().isEmpty())
         return -1;
+
+    QQuickWindow *window = qobject_cast<QQuickWindow*>
+        (engine.rootObjects().constFirst());
+    if (window)
+    {
+        window->setIcon(app.windowIcon());
+    }
 
     QObject::connect(&engine, &QQmlApplicationEngine::quit, &QApplication::quit);
     return app.exec();
