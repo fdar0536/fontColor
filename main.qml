@@ -38,7 +38,12 @@ ApplicationWindow
     visible: true
     width: 750
     height: 300
-    title: qsTr("fontColor for TCAX")
+    title:
+    {
+        var name = "FontColor " + versionMajor + ".";
+        name += versionMinor;
+        return qsTr(name);
+    }
 
     minimumWidth: width
     maximumWidth: width
@@ -46,6 +51,9 @@ ApplicationWindow
     maximumHeight: height
 
     property bool initialized: false
+    property string versionMajor: "1"
+    property string versionMinor: "0 Dev"
+
     FontDatabase
     {
         id: fontDatabase
