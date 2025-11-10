@@ -37,7 +37,7 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    app.setWindowIcon(QIcon(":/fontColor.ico"));
+    app.setWindowIcon(QIcon("://fontColor.ico"));
 
     qRegisterMetaType<QList<QString>>("QList<QString>&");
     qRegisterMetaType<QList<int>>("QList<int>&");
