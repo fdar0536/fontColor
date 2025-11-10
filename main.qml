@@ -450,8 +450,8 @@ ApplicationWindow
             visible: false;
             onAccepted:
             {
-                previewColor.color = color;
-                assColorText.text = utils.convertToAssColor(color);
+                previewColor.color = selectedColor;
+                assColorText.text = utils.convertToAssColor(selectedColor);
             }
         }
 
