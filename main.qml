@@ -38,12 +38,7 @@ ApplicationWindow
     visible: true
     width: 750
     height: 300
-    title:
-    {
-        var name = "FontColor " + versionMajor + ".";
-        name += versionMinor;
-        return qsTr(name);
-    }
+    title: utils.title
 
     minimumWidth: width
     maximumWidth: width
@@ -52,7 +47,7 @@ ApplicationWindow
 
     property bool initialized: false
     property string versionMajor: "1"
-    property string versionMinor: "0 Dev"
+    property string versionMinor: "0"
 
     FontDatabase
     {

@@ -24,13 +24,9 @@
 #ifndef FONTDATABASE_HPP
 #define FONTDATABASE_HPP
 
-#include <vector>
-
 #include "QAbstractItemModel"
 
 #include "sqlhandler.hpp"
-
-using namespace std;
 
 class FontDatabase : public QAbstractItemModel
 {

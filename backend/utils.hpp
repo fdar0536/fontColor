@@ -29,13 +29,22 @@
 class Utils : public QObject
 {
     Q_OBJECT
+
+    Q_PROPERTY(QString title READ title)
+
 public:
 
     explicit Utils(QObject *parent = nullptr);
 
     Q_INVOKABLE QString convertToAssColor(QString);
 
+    Q_INVOKABLE QString title() const;
+
     Q_INVOKABLE void aboutQt();
+
+private:
+
+    QString m_title;
 };
 
 #endif // UTILS_HPP

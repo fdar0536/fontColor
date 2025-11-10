@@ -2,6 +2,14 @@ cmake_minimum_required(VERSION 3.20)
 project(FontColor LANGUAGES C CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+# version
+set(FC_NAME           FontColor)
+set(FC_VERSION_MAJOR  1)
+set(FC_VERSION_MINOR  0)
+set(FC_VERSION_STATUS Dev)
+configure_file(config.h.in config.h @ONLY)
 
 if (UNIX)
     add_compile_options(-Wall -Werror -Wextra)
@@ -38,11 +46,11 @@ find_package(Fontconfig REQUIRED)
 find_package(SQLite3 REQUIRED)
 set(QT_QML_GENERATE_QMLLS_INI on)
 
-qt_add_executable(FontColor
+qt_add_executable(FC_NAME
     main.cpp
 )
 
-qt_add_qml_module(FontColor
+qt_add_qml_module(FC_NAME
     URI FC
     QML_FILES
         main.qml
@@ -61,9 +69,10 @@ qt_add_qml_module(FontColor
 
     RESOURCES
         fontColor.ico
+        RESOURCES config.h.in
 )
 
-target_link_libraries(FontColor
+target_link_libraries(FC_NAME
     PRIVATE
 
     Qt6::Widgets
@@ -74,6 +83,6 @@ target_link_libraries(FontColor
 )
 
 if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
-    target_link_options(FontColor PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-    target_compile_options(FontColor PRIVATE $<$<CONFIG:Debug>:/ZI>)
+    target_link_options(FC_NAME PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+    target_compile_options(FC_NAME PRIVATE $<$<CONFIG:Debug>:/ZI>)
 endif (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)

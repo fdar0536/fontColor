@@ -21,34 +21,16 @@
  * SOFTWARE.
  */
 
-#include "QMessageBox"
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
 
-#include "utils.hpp"
+#define FC_NAME           "@FC_NAME@"
+#define FC_VERSION_MAJOR  "@FC_VERSION_MAJOR@"
+#define FC_VERSION_MINOR  "@FC_VERSION_MINOR@"
+#define FC_VERSION_STATUS "@FC_VERSION_STATUS@"
 
-#include "config.h"
+#define FC_TITLE \
+        FC_NAME" "FC_VERSION_MAJOR"."FC_VERSION_MINOR \
+        " "FC_VERSION_STATUS
 
-Utils::Utils(QObject *parent) :
-    QObject(parent),
-    m_title(FC_TITLE)
-{}
-
-QString Utils::convertToAssColor(QString rgb)
-{
-    QString r, g, b;
-    r = rgb.mid(1, 2);
-    g = rgb.mid(3, 2);
-    b = rgb.mid(5, 2);
-    return (b + g + r).toUpper();
-}
-
-QString Utils::title() const
-{
-    return m_title;
-}
-
-void Utils::aboutQt()
-{
-    QWidget *tmp = new QWidget(nullptr);
-    QMessageBox::aboutQt(tmp);
-    delete tmp;
-}
+#endif // _CONFIG_H_
