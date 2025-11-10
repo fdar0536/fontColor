@@ -1,10 +1,26 @@
 #ifndef SQLHANDLER_HPP
 #define SQLHANDLER_HPP
 
+#include <mutex>
+
 #include "QRunnable"
-#include "QSqlQuery"
-#include "QSqlDatabase"
 #include "QObject"
+
+#include "sqlite3.h"
+
+class SQLiteInfo
+{
+public:
+
+    ~SQLiteInfo();
+
+    sqlite3 *db = nullptr;
+
+    sqlite3_stmt *stmt = nullptr;
+
+    std::mutex mutex;
+
+}; // end class SQLiteToken
 
 class SQLHandler : public QObject, public QRunnable
 {
@@ -18,8 +34,6 @@ public:
 
     void setqueryString(QString &);
 
-    void setQuery(QSqlQuery &&);
-
     void setfontFamilyList(QList<QString> &);
 
     void setfontIndex(QList<int> &);
@@ -28,9 +42,9 @@ public:
 
     bool getRes() const;
 
-    QSqlQuery &&getQuery();
-
     QString getlastError() const;
+
+    SQLiteInfo *getSqlInfo();
 
     void run() override; //for sort
 
@@ -46,11 +60,9 @@ private:
 
     void db_init();
 
-    QSqlDatabase m_db;
+    SQLiteInfo m_sql;
 
-    QSqlQuery m_query;
-
-    QString m_queryString;
+    std::string m_queryString;
 
     QString m_lastError;
 

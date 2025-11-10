@@ -14,8 +14,6 @@
 #pragma warning(disable: 4996)
 #endif    /* _MSC_VER */
 
-using namespace std;
-
 FontDatabase::FontDatabase(QObject *parent) :
     QAbstractItemModel(parent),
     m_fontCount(0),
@@ -271,7 +269,7 @@ int FontDatabase::main_process()
         return 1;
     }
 
-    QString queryStr, font_file, font_family, font_style;
+    std::string queryStr, font_file, font_family, font_style;
     m_fontCount = fs->nfont;
     for (int i = 0; fs && i < fs->nfont; ++i)
     {
@@ -281,14 +279,23 @@ int FontDatabase::main_process()
             FcPatternGetString(font, FC_FAMILY, 0, &family) == FcResultMatch &&
             FcPatternGetString(font, FC_STYLE, 0, &style) == FcResultMatch)
         {
-            font_file = QString::fromStdString(string(file, file + strlen((char *)file)));
-            font_family = QString::fromStdString(string(family, family + strlen((char *)family)));
-            font_style = QString::fromStdString(string(style, style + strlen((char *)style)));
+            font_file = std::string(file, file + strlen((char *)file));
+            font_family = std::string(family, family + strlen((char *)family));
+            font_style = std::string(style, style + strlen((char *)style));
 
             queryStr = "INSERT INTO fonts (id, font_file, font_family, font_style)";
-            queryStr += "VALUES (:id, :file, :family, :style)";
+            queryStr += "VALUES (?, ?, ?, ?)";
 
-            QSqlQuery query = QSqlQuery();
+            SQLiteInfo *sql = m_sql->getSqlInfo();
+            std::unique_lock<std::mutex> lock(sql->mutex);
+
+            if (sqlite3_prepare_v2(sql->db,
+                                   queryStr.c_str(), queryStr.length(),
+                                   &sql->stmt, NULL))
+            {
+                qCritical() << "Fail to build prepared statment: " << sqlite3_errmsg(sql->db);
+                return 1;
+            }
 
             query.prepare(queryStr);
             query.bindValue(":id", i);

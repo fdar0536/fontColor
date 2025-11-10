@@ -2,19 +2,31 @@
 #include "sqlhandler.hpp"
 
 #include "QFile"
-#include "QSqlError"
 #include "QVariant"
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996)
 #endif    /* _MSC_VER */
 
-using namespace std;
+SQLiteInfo::~SQLiteInfo()
+{
+    std::unique_lock<std::mutex> lock(mutex);
+
+    if (stmt)
+    {
+        static_cast<void>(sqlite3_finalize(stmt));
+        stmt = nullptr;
+    }
+
+    if (db)
+    {
+        static_cast<void>(sqlite3_close(db));
+        db = nullptr;
+    }
+}
 
 SQLHandler::SQLHandler() :
-    m_db(QSqlDatabase()),
-    m_query(QSqlQuery()),
-    m_queryString(QString("")),
+    m_queryString(""),
     m_lastError(QString("")),
     m_res(true)
 {
@@ -22,18 +34,11 @@ SQLHandler::SQLHandler() :
     this->setAutoDelete(false);
 }
 SQLHandler::~SQLHandler()
-{
-    m_db.close();
-}
+{}
 
 void SQLHandler::setqueryString(QString &input)
 {
-    m_queryString = input;
-}
-
-void SQLHandler::setQuery(QSqlQuery &&input)
-{
-    m_query = std::move(input);
+    m_queryString = input.toUtf8().toStdString();
 }
 
 void SQLHandler::setfontFamilyList(QList<QString> &fontFamilyList)
@@ -56,39 +61,35 @@ bool SQLHandler::getRes() const
     return m_res;
 }
 
-QSqlQuery &&SQLHandler::getQuery()
-{
-    return std::move(m_query);
-}
-
 QString SQLHandler::getlastError() const
 {
     return m_lastError;
 }
 
+SQLiteInfo *SQLHandler::getSqlInfo()
+{
+    return &m_sql;
+}
+
 //run
 void SQLHandler::run()
 {
-    m_query.finish();
-    m_query = QSqlQuery(m_db);
     exec_string();
     if (!m_res)
     {
-        m_lastError = m_query.lastError().text();
+        static_cast<void>(sqlite3_finalize(m_sql.stmt));
+        m_sql.stmt = nullptr;
         emit done(m_fontFamilyList, m_fontIndex);
     }
 
-    m_res = m_query.first();
-    if (!m_res)
-    {
-        m_lastError = m_query.lastError().text();
-        emit done(m_fontFamilyList, m_fontIndex);
-    }
+    static_cast<void>(sqlite3_finalize(m_sql.stmt));
+    m_sql.stmt = nullptr;
 
     m_fontFamilyList.clear();
     m_fontIndex.clear();
     m_fontFamilyList.reserve(m_fontCount);
     m_fontIndex.reserve(m_fontCount);
+
     QSqlQuery style_res = QSqlQuery(m_db);
     QString style_query;
     int index(0);
@@ -126,21 +127,28 @@ void SQLHandler::run()
 
 void SQLHandler::exec_string()
 {
-    m_res = m_query.exec(m_queryString);
-
-    if (!m_res)
+    if (sqlite3_prepare_v2(m_sql.db,
+                           m_queryString.c_str(), m_queryString.length(),
+                           &m_sql.stmt, NULL))
     {
-        m_lastError = m_query.lastError().text();
+        m_lastError = QString("Fail to build prepared statment:") +
+                      QString(sqlite3_errmsg(m_sql.db));
+        m_res = false;
+        return;
     }
+
+    if (sqlite3_step(m_sql.stmt) != SQLITE_DONE)
+    {
+        m_res = false;
+    }
+
+    static_cast<void>(sqlite3_finalize(m_sql.stmt));
+    m_sql.stmt = nullptr;
 }
 
 void SQLHandler::exec_prepared()
 {
-    m_res = m_query.exec();
-    if (!m_res)
-    {
-        m_lastError = m_query.lastError().text();
-    }
+    return exec_string();
 }
 
 //private member function
@@ -155,18 +163,20 @@ void SQLHandler::db_init()
         return;
     }
 
-    string tmp_path(tmp_char);
-    string::size_type str_index = 0;
+    std::string tmp_path(tmp_char);
+    std::string::size_type str_index = 0;
     while ((str_index = tmp_path.find("\\", str_index)) != string::npos)
     {
         tmp_path.replace(str_index, 1, "/");
         ++str_index;
     }
 #else
-    string tmp_path= "/tmp";
+    std::string tmp_path= "/tmp";
 #endif
 
-    QString db_path = QString::fromStdString(tmp_path + "/fontColor.db");
+    std::string path = tmp_path + "/fontColor.db";
+
+    QString db_path = QString::fromStdString(path);
     if (QFile::exists(db_path))
     {
         QFile file(db_path);
@@ -178,21 +188,20 @@ void SQLHandler::db_init()
         }
     }
 
-    m_db = QSqlDatabase::addDatabase("QSQLITE");
-    m_db.setDatabaseName(db_path);
-
-    if (!m_db.open())
+    if (sqlite3_open(path.c_str(), &m_sql.db))
     {
-        m_lastError = "Fail to open database";
+        m_lastError = QString("Fail to open SQLite: ") +
+                      QString(sqlite3_errmsg(m_sql.db));
+        m_sql.db = nullptr;
         m_res = false;
         return;
     }
 
-    m_query = QSqlQuery(m_db);
     m_queryString = "drop table if exists fonts";
     exec_string();
     if (!m_res)
     {
+        m_lastError = QString("Fail to drop table");
         return;
     }
 
@@ -202,6 +211,9 @@ void SQLHandler::db_init()
     m_queryString += "font_family TEXT,";
     m_queryString += "font_style TEXT)";
     exec_string();
+
+    static_cast<void>(sqlite3_finalize(m_sql.stmt));
+    m_sql.stmt = nullptr;
     if (!m_res)
     {
         return;

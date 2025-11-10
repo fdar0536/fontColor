@@ -33,8 +33,9 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.9 COMPONENTS Widgets Quick QuickControls2 Sql REQUIRED)
+find_package(Qt6 6.9 COMPONENTS Widgets Quick QuickControls2 REQUIRED)
 find_package(Fontconfig REQUIRED)
+find_package(SQLite3 REQUIRED)
 set(QT_QML_GENERATE_QMLLS_INI on)
 
 qt_add_executable(FontColor
