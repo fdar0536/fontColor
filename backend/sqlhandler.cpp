@@ -74,52 +74,88 @@ SQLiteInfo *SQLHandler::getSqlInfo()
 //run
 void SQLHandler::run()
 {
-    exec_string();
-    if (!m_res)
+    std::unique_lock<std::mutex> lock(m_sql.mutex);
+    m_res = true;
+
+    if (sqlite3_prepare_v2(m_sql.db,
+                           m_queryString.c_str(), m_queryString.length(),
+                           &m_sql.stmt, NULL))
     {
+        m_lastError = QString("Fail to build prepared statment:") +
+                      QString(sqlite3_errmsg(m_sql.db));
+        m_res = false;
         static_cast<void>(sqlite3_finalize(m_sql.stmt));
         m_sql.stmt = nullptr;
         emit done(m_fontFamilyList, m_fontIndex);
+        return;
     }
-
-    static_cast<void>(sqlite3_finalize(m_sql.stmt));
-    m_sql.stmt = nullptr;
 
     m_fontFamilyList.clear();
     m_fontIndex.clear();
     m_fontFamilyList.reserve(m_fontCount);
     m_fontIndex.reserve(m_fontCount);
 
-    QSqlQuery style_res = QSqlQuery(m_db);
-    QString style_query;
+    sqlite3_stmt *style_res = nullptr;
+    std::string style_query;
     int index(0);
     for (index = 0; index < m_fontCount; ++index)
     {
-        int id = m_query.value(0).toInt();
-        QString family = m_query.value(1).toString();
-
-        style_query = "select font_style from fonts where id=" + QString::number(id);
-        if (!style_res.exec(style_query))
+        int rc = sqlite3_step(m_sql.stmt);
+        int id = 0;
+        std::string family = "";
+        if (rc == SQLITE_ROW)
         {
+            id = sqlite3_column_int(m_sql.stmt, 0);
+            family = reinterpret_cast<const char *>(sqlite3_column_text(m_sql.stmt, 1));
+        }
+
+        style_query = "select font_style from fonts where id=" + std::to_string(id);
+        if (sqlite3_prepare_v2(m_sql.db,
+                               style_query.c_str(), style_query.length(),
+                               &style_res, NULL))
+        {
+            m_lastError = QString("Fail to build prepared statment:") +
+                          QString(sqlite3_errmsg(m_sql.db));
+            m_res = false;
+            static_cast<void>(sqlite3_finalize(m_sql.stmt));
+            m_sql.stmt = nullptr;
+            static_cast<void>(sqlite3_finalize(style_res));
             emit done(m_fontFamilyList, m_fontIndex);
             return;
         }
 
-        m_res = style_res.first();
-        if (!m_res)
+        while (1)
         {
-            emit done(m_fontFamilyList, m_fontIndex);
-            return;
+            rc = sqlite3_step(style_res);
+            if (rc == SQLITE_ROW)
+            {
+                // reinterpret_cast<const char *>(sqlite3_column_text(m_sql.stmt, 1))
+                family += (" (" + std::string(reinterpret_cast<const char *>
+                                              (sqlite3_column_text(style_res, 0))) + ")");
+                m_fontIndex.append(id);
+                m_fontFamilyList.append(QString::fromStdString(family));
+            }
+            else if (rc == SQLITE_DONE)
+            {
+                break;
+            }
+            else
+            {
+                // error
+                m_lastError = QString(sqlite3_errmsg(m_sql.db));
+                m_res = false;
+                static_cast<void>(sqlite3_finalize(m_sql.stmt));
+                m_sql.stmt = nullptr;
+
+                static_cast<void>(sqlite3_finalize(style_res));
+
+                emit done(m_fontFamilyList, m_fontIndex);
+
+                return;
+            }
         }
 
-        family += (" (" + style_res.value(0).toString() + ")");
-        m_fontIndex.append(id);
-        m_fontFamilyList.append(family);
-
-        if (!m_query.next())
-        {
-            break;
-        }
+        static_cast<void>(sqlite3_finalize(style_res));
     }
 
     emit done(m_fontFamilyList, m_fontIndex);
@@ -127,6 +163,9 @@ void SQLHandler::run()
 
 void SQLHandler::exec_string()
 {
+    std::unique_lock<std::mutex> lock(m_sql.mutex);
+    m_res = true;
+
     if (sqlite3_prepare_v2(m_sql.db,
                            m_queryString.c_str(), m_queryString.length(),
                            &m_sql.stmt, NULL))

@@ -69,7 +69,7 @@ target_link_libraries(FontColor
     Qt6::Widgets
     Qt6::Quick
     Qt6::QuickControls2
-    Qt6::Sql
+    SQLite::SQLite3
     Fontconfig::Fontconfig
 )
 

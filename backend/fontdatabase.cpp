@@ -2,7 +2,6 @@
 
 #include "QDebug"
 #include "QFile"
-#include "QSqlError"
 #include "QApplication"
 #include "QThreadPool"
 
@@ -52,87 +51,34 @@ int FontDatabase::fontCount() const
 
 QString FontDatabase::getFontFamily(int input)
 {
-    QString query = "select font_family from fonts where id=" + QString::number(input);
-    m_sql->setqueryString(query);
-    m_sql->exec_string();
-    if (!m_sql->getRes())
-    {
-        return QString("");
-    }
-
-    QSqlQuery res = m_sql->getQuery();
-    if(res.first())
-    {
-        return res.value(0).toString();
-    }
-    else
-    {
-        return QString("");
-    }
+    std::string query = "select font_family from fonts where id=" + std::to_string(input);
+    return getString(query);
 }
 
 QString FontDatabase::getFontFilePath(int input)
 {
-    QString query = "select font_file from fonts where id=" + QString::number(input);
-    m_sql->setqueryString(query);
-    m_sql->exec_string();
-    if (!m_sql->getRes())
-    {
-        return QString("");
-    }
-
-    QSqlQuery res = m_sql->getQuery();
-    if(res.first())
-    {
-        return res.value(0).toString();
-    }
-    else
-    {
-        return QString("");
-    }
+    std::string query = "select font_file from fonts where id=" + std::to_string(input);
+    return getString(query);
 }
 
 QString FontDatabase::getFontFileName(int input)
 {
-    QString query = "select font_file from fonts where id=" + QString::number(input);
-    m_sql->setqueryString(query);
-    m_sql->exec_string();
-    if (!m_sql->getRes())
+    std::string query = "select font_file from fonts where id=" + std::to_string(input);
+    QString res = getString(query);
+
+    if (res.isEmpty())
     {
-        return QString("");
+        return res;
     }
 
-    QSqlQuery res = m_sql->getQuery();
-    if(res.first())
-    {
-        QStringList list = res.value(0).toString().split("/");
-        return list.at(list.count() - 1);
-    }
-    else
-    {
-        return QString("");
-    }
+    QStringList list = res.split("/");
+    return list.at(list.count() - 1);
 }
 
 QString FontDatabase::getFontStyle(int input)
 {
-    QString query = "select font_style from fonts where id=" + QString::number(input);
-    m_sql->setqueryString(query);
-    m_sql->exec_string();
-    if (!m_sql->getRes())
-    {
-        return QString("");
-    }
-
-    QSqlQuery res = m_sql->getQuery();
-    if(res.first())
-    {
-        return res.value(0).toString();
-    }
-    else
-    {
-        return QString("");
-    }
+    std::string query = "select font_style from fonts where id=" + std::to_string(input);
+    return getString(query);
 }
 
 void FontDatabase::font_asc_sort()
@@ -248,6 +194,47 @@ void FontDatabase::init()
     {
         m_fontCount = 0;
     }
+}
+
+QString FontDatabase::getString(const std::string &in)
+{
+    SQLiteInfo *sql = m_sql->getSqlInfo();
+    std::unique_lock<std::mutex> lock(sql->mutex);
+    QString out = "";
+
+    if (sqlite3_prepare_v2(sql->db,
+                           in.c_str(), in.length(),
+                           &sql->stmt, NULL))
+    {
+        qCritical() << "Fail to build prepared statment: " << sqlite3_errmsg(sql->db);
+        goto exit;
+    }
+
+    while(1)
+    {
+        int rc = sqlite3_step(sql->stmt);
+
+        if (rc == SQLITE_ROW)
+        {
+            out = reinterpret_cast<const char *>(sqlite3_column_text(sql->stmt, 0));
+        }
+        else if (rc == SQLITE_DONE)
+        {
+            break;
+        }
+        else
+        {
+            // other error
+            qCritical() << "Fail to execute sql: "
+                        << sqlite3_errmsg(sql->db);
+            break;
+        }
+    }
+
+exit:
+    static_cast<void>(sqlite3_finalize(sql->stmt));
+    sql->stmt = nullptr;
+    return out;
 }
 
 int FontDatabase::main_process()
