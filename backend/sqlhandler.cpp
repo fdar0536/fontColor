@@ -31,9 +31,9 @@ void SQLHandler::setqueryString(QString &input)
     m_queryString = input;
 }
 
-void SQLHandler::setQuery(QSqlQuery &input)
+void SQLHandler::setQuery(QSqlQuery &&input)
 {
-    m_query = input;
+    m_query = std::move(input);
 }
 
 void SQLHandler::setfontFamilyList(QList<QString> &fontFamilyList)
@@ -56,9 +56,9 @@ bool SQLHandler::getRes() const
     return m_res;
 }
 
-QSqlQuery SQLHandler::getQuery() const
+QSqlQuery &&SQLHandler::getQuery()
 {
-    return m_query;
+    return std::move(m_query);
 }
 
 QString SQLHandler::getlastError() const
@@ -77,14 +77,14 @@ void SQLHandler::run()
         m_lastError = m_query.lastError().text();
         emit done(m_fontFamilyList, m_fontIndex);
     }
-    
+
     m_res = m_query.first();
     if (!m_res)
     {
         m_lastError = m_query.lastError().text();
         emit done(m_fontFamilyList, m_fontIndex);
     }
-    
+
     m_fontFamilyList.clear();
     m_fontIndex.clear();
     m_fontFamilyList.reserve(m_fontCount);
@@ -96,38 +96,38 @@ void SQLHandler::run()
     {
         int id = m_query.value(0).toInt();
         QString family = m_query.value(1).toString();
-        
+
         style_query = "select font_style from fonts where id=" + QString::number(id);
         if (!style_res.exec(style_query))
         {
             emit done(m_fontFamilyList, m_fontIndex);
             return;
         }
-        
+
         m_res = style_res.first();
         if (!m_res)
         {
             emit done(m_fontFamilyList, m_fontIndex);
             return;
         }
-        
+
         family += (" (" + style_res.value(0).toString() + ")");
         m_fontIndex.append(id);
         m_fontFamilyList.append(family);
-        
+
         if (!m_query.next())
         {
             break;
         }
     }
-    
+
     emit done(m_fontFamilyList, m_fontIndex);
 }
 
 void SQLHandler::exec_string()
 {
     m_res = m_query.exec(m_queryString);
-    
+
     if (!m_res)
     {
         m_lastError = m_query.lastError().text();
@@ -154,7 +154,7 @@ void SQLHandler::db_init()
         m_res = false;
         return;
     }
-    
+
     string tmp_path(tmp_char);
     string::size_type str_index = 0;
     while ((str_index = tmp_path.find("\\", str_index)) != string::npos)
@@ -165,7 +165,7 @@ void SQLHandler::db_init()
 #else
     string tmp_path= "/tmp";
 #endif
-    
+
     QString db_path = QString::fromStdString(tmp_path + "/fontColor.db");
     if (QFile::exists(db_path))
     {
@@ -177,17 +177,17 @@ void SQLHandler::db_init()
             return;
         }
     }
-    
+
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(db_path);
-    
+
     if (!m_db.open())
     {
         m_lastError = "Fail to open database";
         m_res = false;
         return;
     }
-    
+
     m_query = QSqlQuery(m_db);
     m_queryString = "drop table if exists fonts";
     exec_string();
@@ -195,7 +195,7 @@ void SQLHandler::db_init()
     {
         return;
     }
-    
+
     m_queryString = "create table if not exists fonts (";
     m_queryString += "id INTEGER,";
     m_queryString += "font_file TEXT,";

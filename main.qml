@@ -1,7 +1,7 @@
-import QtQuick 2.12
-import QtQuick.Dialogs 1.3
-import QtQuick.Controls 2.5
-import QtQuick.Controls.Universal 2.12
+import QtQuick
+import QtQuick.Dialogs
+import QtQuick.Controls
+import QtQuick.Controls.Universal
 
 import backend.FontDatabase 0.1
 import backend.Clipboard 0.1
@@ -15,13 +15,13 @@ ApplicationWindow
     width: 750
     height: 300
     title: qsTr("fontColor for TCAX")
-    
+
     property bool initialized: false
-    
+
     FontDatabase
     {
         id: fontDatabase
-        
+
         onSortingDone:
         {
             if (fontDatabase.fontCount !== 0)
@@ -36,31 +36,30 @@ ApplicationWindow
             }
         }
     }
-    
+
     Clipboard
     {
         id: clipboard
     }
-    
+
     Utils
     {
         id: utils
     }
-    
+
     MessageDialog
     {
         id: exitDialog
         title: root.title
         text: qsTr("Are you sure to exit?")
-        icon: StandardIcon.Question
-        standardButtons: StandardButton.Yes | StandardButton.No | StandardButton.Cancel
-        
-        onYes:
+        buttons: MessageDialog.Yes | MessageDialog.No | MessageDialog.Cancel
+
+        onAccepted:
         {
             Qt.quit()
         }
     }
-    
+
     BusyIndicator
     {
         id: busyIndicator
@@ -70,7 +69,7 @@ ApplicationWindow
         z: 50
         running: true
     }
-    
+
     function ui_enabler(input)
     {
         if (input === false)
@@ -80,14 +79,14 @@ ApplicationWindow
             fontFileInfo.text = "";
             fontStyleInfo.text = "";
         }
-        
+
         copyFontFileNameBtn.enabled = input;
         copyFontFileBtn.enabled = input;
         copyFontFamilyBtn.enabled = input;
         fontComboBoxAsc.enabled = input;
         fontComboBoxDesc.enabled = input;
     }
-    
+
     function loading_failed()
     {
         titleText.text = qsTr("Failed to load font database.");
@@ -95,7 +94,7 @@ ApplicationWindow
         fontComboBox.displayText = qsTr("Failed to load font database.");
         busyIndicator.running = false;
     }
-    
+
     function updateHook(input1, input2)
     {
         var index = fontDatabase.getCurrentFontIndex(input1);
@@ -103,25 +102,25 @@ ApplicationWindow
         titleText.text = fontfamily;
         titleText.font.family = fontfamily;
         fontFamilyInfo.text = fontfamily;
-        
+
         var style = fontDatabase.getFontStyle(index);
         fontfamily += " (" + style + ")";
         fontComboBox.displayText = fontfamily;
         fontFileInfo.text = fontDatabase.getFontFileName(index);
         fontStyleInfo.text = style;
-        
+
         if (input2 === 0)
         {
             fontComboBox.currentIndex = 0;
         }
     }
-    
+
     onClosing:
     {
         close.accepted = false;
         exitDialog.open();
     }
-    
+
     onAfterSynchronizing: function()
     {
         if (initialized === true)
@@ -132,7 +131,7 @@ ApplicationWindow
         {
             initialized = true;
         }
-        
+
         ui_enabler(false);
         if (fontDatabase.fontCount !== 0)
         {
@@ -143,7 +142,7 @@ ApplicationWindow
             loading_failed();
         }
     }
-    
+
     Pane
     {
         id: mainPane
@@ -151,7 +150,7 @@ ApplicationWindow
         y: 20
         width: parent.width - x * 2
         height: parent.height - y * 2
-        
+
         Label
         {
             id: titleLabel
@@ -162,7 +161,7 @@ ApplicationWindow
                 right: parent.right
                 top: parent.top
             }
-            
+
             TitleText
             {
                 id: blank1
@@ -174,7 +173,7 @@ ApplicationWindow
                     bottom: parent.bottom
                 }
             }
-            
+
             TitleText
             {
                 id: titleText
@@ -186,7 +185,7 @@ ApplicationWindow
                     right: blank2.left
                 }
             }
-            
+
             TitleText
             {
                 id: blank2
@@ -198,13 +197,13 @@ ApplicationWindow
                     bottom: parent.bottom
                 }
             }
-            
+
             background: Rectangle
             {
                 border.width: 1
             }
         } //end Label
-        
+
         ComboBox
         {
             id: fontComboBox
@@ -215,30 +214,30 @@ ApplicationWindow
                 left: parent.left
                 right: fontComboBoxAsc.left
             }
-            
+
             model: fontDatabase
-            
+
             delegate: ItemDelegate
             {
                 text: fontDatabase.getCurrentFontFamily(index)
             }
-            
+
             onCurrentIndexChanged: function()
             {
                 if (fontDatabase.fontCount === 0)
                 {
                     return;
                 }
-                
+
                 updateHook(currentIndex, -1);
             }
         } //end fontComboBox
-        
+
         ButtonGroup
         {
             id: radioButtonGroup
         }
-        
+
         RadioButton
         {
             id: fontComboBoxAsc
@@ -250,7 +249,7 @@ ApplicationWindow
             }
             ButtonGroup.group: radioButtonGroup
             checked: true
-            
+
             onCheckedChanged:
             {
                 ui_enabler(false);
@@ -264,7 +263,7 @@ ApplicationWindow
                     {
                         fontDatabase.font_asc_sort();
                     }
-                    
+
                     busyIndicator.running = true;
                 }
                 else
@@ -273,7 +272,7 @@ ApplicationWindow
                 }
             }
         }
-        
+
         RadioButton
         {
             id: fontComboBoxDesc
@@ -283,10 +282,10 @@ ApplicationWindow
                 right: parent.right
                 top: titleLabel.bottom
             }
-            
+
             ButtonGroup.group: radioButtonGroup
         }
-        
+
         //file
         TitleText
         {
@@ -300,7 +299,7 @@ ApplicationWindow
                 bottom: copyFontFileNameBtn.bottom
             }
         }
-        
+
         TitleText
         {
             id: fontFileInfo
@@ -313,7 +312,7 @@ ApplicationWindow
                 bottom: copyFontFileNameBtn.bottom
             }
         }
-        
+
         ToolTipButton
         {
             id: copyFontFileNameBtn
@@ -324,13 +323,13 @@ ApplicationWindow
                 top: fontComboBox.bottom
                 right: fontPathText.left
             }
-            
+
             onClicked: function()
             {
                 clipboard.copyString(fontDatabase.getFontFileName(fontDatabase.getCurrentFontIndex(fontComboBox.currentIndex)));
             }
         }
-        
+
         Text
         {
             id: fontPathText
@@ -342,7 +341,7 @@ ApplicationWindow
                 right: copyFontFileBtn.left
             }
         }
-        
+
         ToolTipButton
         {
             id: copyFontFileBtn
@@ -353,13 +352,13 @@ ApplicationWindow
                 top: fontComboBox.bottom
                 right: parent.right
             }
-            
+
             onClicked:
             {
                 clipboard.copyFile(fontDatabase.getFontFilePath(fontDatabase.getCurrentFontIndex(fontComboBox.currentIndex)));
             }
         }
-        
+
         //family
         TitleText
         {
@@ -373,7 +372,7 @@ ApplicationWindow
                 bottom: copyFontFamilyBtn.bottom
             }
         }
-        
+
         TitleText
         {
             id: fontFamilyInfo
@@ -386,7 +385,7 @@ ApplicationWindow
                 bottom: copyFontFamilyBtn.bottom
             }
         }
-        
+
         ToolTipButton
         {
             id: copyFontFamilyBtn
@@ -397,13 +396,13 @@ ApplicationWindow
                 top: fontFileInfo.bottom
                 right: parent.right
             }
-            
+
             onClicked:
             {
                 clipboard.copyString(fontDatabase.getFontFamily(fontDatabase.getCurrentFontIndex(fontComboBox.currentIndex)));
             }
         }
-        
+
         //style
         TitleText
         {
@@ -417,7 +416,7 @@ ApplicationWindow
                 bottom: styleRectangle.bottom
             }
         }
-        
+
         TitleText
         {
             id: fontStyleInfo
@@ -430,7 +429,7 @@ ApplicationWindow
                 bottom: styleRectangle.bottom
             }
         }
-        
+
         Rectangle
         {
             id: styleRectangle
@@ -442,7 +441,7 @@ ApplicationWindow
                 top: copyFontFamilyBtn.bottom
             }
         }
-        
+
         //color
         ColorDialog
         {
@@ -455,7 +454,7 @@ ApplicationWindow
                 assColorText.text = utils.convertToAssColor(color);
             }
         }
-        
+
         ToolTipButton
         {
             id: selectColorBtn
@@ -466,10 +465,10 @@ ApplicationWindow
                 left: parent.left
                 top: fontStyleInfo.bottom
             }
-            
+
             onClicked: colorDialog.open()
         }
-        
+
         Text
         {
             id: selectPreviewText
@@ -481,7 +480,7 @@ ApplicationWindow
                 left: selectColorBtn.right
             }
         }
-        
+
         Rectangle
         {
             id: previewColor
@@ -492,12 +491,12 @@ ApplicationWindow
                 left: selectPreviewText.right
                 top: fontStyleInfo.bottom
             }
-            
+
             border
             {
                 width: 1
             }
-            
+
             MouseArea
             {
                 anchors.fill: parent
@@ -506,15 +505,15 @@ ApplicationWindow
                 {
                     previewColorTip.visible = true
                 }
-                
+
                 onExited:
                 {
                     previewColorTip.visible = false
                 }
-                
+
                 onClicked: colorDialog.open()
             }
-            
+
             ToolTip
             {
                 id: previewColorTip
@@ -524,7 +523,7 @@ ApplicationWindow
                 timeout: 3000
             }
         }
-        
+
         Text
         {
             id: previewAssText
@@ -536,7 +535,7 @@ ApplicationWindow
                 left: previewColor.right
             }
         }
-        
+
         TitleText
         {
             id: assColorText
@@ -547,7 +546,7 @@ ApplicationWindow
                 top: selectColorBtn.top
                 bottom: selectColorBtn.bottom
             }
-            
+
             MouseArea
             {
                 anchors.fill: parent
@@ -556,15 +555,15 @@ ApplicationWindow
                 {
                     assColorTextTip.visible = true
                 }
-                
+
                 onExited:
                 {
                     assColorTextTip.visible = false
                 }
-                
+
                 onClicked: clipboard.copyString(assColorText.text)
             }
-            
+
             ToolTip
             {
                 id: assColorTextTip
@@ -574,7 +573,7 @@ ApplicationWindow
                 timeout: 3000
             }
         }
-        
+
         Text
         {
             id: assCopyText
@@ -586,7 +585,7 @@ ApplicationWindow
                 left: assColorText.right
             }
         }
-        
+
         ToolTipButton
         {
             text: qsTr("Copy ass color")
@@ -596,13 +595,13 @@ ApplicationWindow
                 left: assCopyText.right
                 top: fontStyleInfo.bottom
             }
-            
+
             onClicked:
             {
                 clipboard.copyString(assColorText.text);
             }
         }
-        
+
         //about qt and exit
         ToolTipButton
         {
@@ -614,10 +613,10 @@ ApplicationWindow
                 top: fontStyleInfo.bottom
                 right: parent.right
             }
-            
+
             onClicked: exitDialog.open()
         }
-        
+
         Text
         {
             id: about
@@ -629,7 +628,7 @@ ApplicationWindow
                 right: exitBtn.left
             }
         }
-        
+
         ToolTipButton
         {
             text: qsTr("About Qt")
@@ -639,7 +638,7 @@ ApplicationWindow
                 top: fontStyleInfo.bottom
                 right: about.left
             }
-            
+
             onClicked: utils.aboutQt()
         }
     } //end Pane

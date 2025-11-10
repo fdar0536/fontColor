@@ -32,9 +32,9 @@ FontDatabase::FontDatabase(QObject *parent) :
         m_debug = true;
         m_program_name = args.at(0);
     }
-    
+
     init();
-    
+
     connect(m_sql, SIGNAL(done(QList<QString> &, QList<int> &)),
             this, SLOT(handle_sorting_done(QList<QString> &, QList<int> &)));
 }
@@ -43,7 +43,7 @@ FontDatabase::~FontDatabase()
 {
     if (QThreadPool::globalInstance()->activeThreadCount())
         QThreadPool::globalInstance()->waitForDone();
-    
+
     delete m_sql;
 }
 
@@ -61,7 +61,7 @@ QString FontDatabase::getFontFamily(int input)
     {
         return QString("");
     }
-    
+
     QSqlQuery res = m_sql->getQuery();
     if(res.first())
     {
@@ -82,7 +82,7 @@ QString FontDatabase::getFontFilePath(int input)
     {
         return QString("");
     }
-    
+
     QSqlQuery res = m_sql->getQuery();
     if(res.first())
     {
@@ -103,7 +103,7 @@ QString FontDatabase::getFontFileName(int input)
     {
         return QString("");
     }
-    
+
     QSqlQuery res = m_sql->getQuery();
     if(res.first())
     {
@@ -125,7 +125,7 @@ QString FontDatabase::getFontStyle(int input)
     {
         return QString("");
     }
-    
+
     QSqlQuery res = m_sql->getQuery();
     if(res.first())
     {
@@ -190,7 +190,7 @@ QVariant FontDatabase::data(const QModelIndex &index, int role) const
         index.column() < 0 ||
         index.column() > 2)
         return QVariant();
-    
+
     if (role == IdRole)
         return m_fontIndex.at(index.row());
     else if (role == FamilyRole)
@@ -217,12 +217,12 @@ void FontDatabase::handle_sorting_done(QList<QString> &fontFamilyList, QList<int
         emit sortingDone();
         return;
     }
-    
+
     //update data
     m_fontFamilyList = fontFamilyList;
     m_fontIndex = fontIndex;
     m_fontCount = fontIndex.count();
-    
+
     endResetModel();
     emit sortingDone();
 }
@@ -245,7 +245,7 @@ void FontDatabase::init()
         if (m_debug) qDebug() << m_program_name << ": " << m_sql->getlastError();
         return;
     }
-    
+
     if (main_process() != 0)
     {
         m_fontCount = 0;
@@ -263,14 +263,14 @@ int FontDatabase::main_process()
         if (m_debug) qDebug() << m_program_name << ": FcFontList is nullptr";
         return 1;
     }
-    
+
     if (fs->nfont == 0)
     {
         if (m_debug) qDebug() << m_program_name << ": FcFontList->nfont is 0";
         if (fs) FcFontSetDestroy(fs);
         return 1;
     }
-    
+
     QString queryStr, font_file, font_family, font_style;
     m_fontCount = fs->nfont;
     for (int i = 0; fs && i < fs->nfont; ++i)
@@ -284,20 +284,20 @@ int FontDatabase::main_process()
             font_file = QString::fromStdString(string(file, file + strlen((char *)file)));
             font_family = QString::fromStdString(string(family, family + strlen((char *)family)));
             font_style = QString::fromStdString(string(style, style + strlen((char *)style)));
-            
+
             queryStr = "INSERT INTO fonts (id, font_file, font_family, font_style)";
             queryStr += "VALUES (:id, :file, :family, :style)";
-            
+
             QSqlQuery query = QSqlQuery();
-            
+
             query.prepare(queryStr);
             query.bindValue(":id", i);
             query.bindValue(":file", font_file);
             query.bindValue(":family", font_family);
             query.bindValue(":style", font_style);
-            m_sql->setQuery(query);
+            m_sql->setQuery(std::move(query));
             m_sql->exec_prepared();
-            
+
             if (!m_sql->getRes())
             {
                 if (fs) FcFontSetDestroy(fs);
@@ -305,7 +305,7 @@ int FontDatabase::main_process()
             }
         }
     }
-    
+
     if (fs) FcFontSetDestroy(fs);
     return 0;
 }

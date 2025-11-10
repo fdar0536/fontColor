@@ -33,7 +33,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.9 COMPONENTS Widgets Quick QuickControls2 REQUIRED)
+find_package(Qt6 6.9 COMPONENTS Widgets Quick QuickControls2 Sql REQUIRED)
 find_package(Fontconfig REQUIRED)
 set(QT_QML_GENERATE_QMLLS_INI on)
 
@@ -68,6 +68,7 @@ target_link_libraries(FontColor
     Qt6::Widgets
     Qt6::Quick
     Qt6::QuickControls2
+    Qt6::Sql
     Fontconfig::Fontconfig
 )
 
