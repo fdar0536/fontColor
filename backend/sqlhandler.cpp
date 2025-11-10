@@ -146,11 +146,6 @@ void SQLHandler::exec_string()
     m_sql.stmt = nullptr;
 }
 
-void SQLHandler::exec_prepared()
-{
-    return exec_string();
-}
-
 //private member function
 void SQLHandler::db_init()
 {
@@ -212,8 +207,6 @@ void SQLHandler::db_init()
     m_queryString += "font_style TEXT)";
     exec_string();
 
-    static_cast<void>(sqlite3_finalize(m_sql.stmt));
-    m_sql.stmt = nullptr;
     if (!m_res)
     {
         return;

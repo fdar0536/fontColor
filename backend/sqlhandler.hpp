@@ -50,8 +50,6 @@ public:
 
     void exec_string();
 
-    void exec_prepared();
-
 signals:
 
     void done(QList<QString> &, QList<int> &);

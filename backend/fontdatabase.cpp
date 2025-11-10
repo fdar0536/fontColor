@@ -271,6 +271,7 @@ int FontDatabase::main_process()
 
     std::string queryStr, font_file, font_family, font_style;
     m_fontCount = fs->nfont;
+    int ret = 0;
     for (int i = 0; fs && i < fs->nfont; ++i)
     {
         FcPattern* font = fs->fonts[i];
@@ -294,25 +295,67 @@ int FontDatabase::main_process()
                                    &sql->stmt, NULL))
             {
                 qCritical() << "Fail to build prepared statment: " << sqlite3_errmsg(sql->db);
-                return 1;
+                ret = 1;
+                goto exit;
             }
 
-            query.prepare(queryStr);
-            query.bindValue(":id", i);
-            query.bindValue(":file", font_file);
-            query.bindValue(":family", font_family);
-            query.bindValue(":style", font_style);
-            m_sql->setQuery(std::move(query));
-            m_sql->exec_prepared();
-
-            if (!m_sql->getRes())
+            if (sqlite3_bind_int(sql->stmt, 1, i))
             {
-                if (fs) FcFontSetDestroy(fs);
-                return 1;
+                qCritical() << "Fail to build prepared statment: " <<
+                              sqlite3_errmsg(sql->db);
+                static_cast<void>(sqlite3_finalize(sql->stmt));
+                sql->stmt = nullptr;
+                ret = 1;
+                goto exit;
             }
+
+            if (sqlite3_bind_text(sql->stmt, 2, font_file.c_str(),
+                                  font_file.length(), NULL))
+            {
+                qCritical() << "Fail to build prepared statment: " <<
+                    sqlite3_errmsg(sql->db);
+                static_cast<void>(sqlite3_finalize(sql->stmt));
+                sql->stmt = nullptr;
+                ret = 1;
+                goto exit;
+            }
+
+            if (sqlite3_bind_text(sql->stmt, 3, font_family.c_str(),
+                                  font_family.length(), NULL))
+            {
+                qCritical() << "Fail to build prepared statment: " <<
+                    sqlite3_errmsg(sql->db);
+                static_cast<void>(sqlite3_finalize(sql->stmt));
+                sql->stmt = nullptr;
+                ret = 1;
+                goto exit;
+            }
+
+            if (sqlite3_bind_text(sql->stmt, 4, font_style.c_str(),
+                                  font_style.length(), NULL))
+            {
+                qCritical() << "Fail to build prepared statment: " <<
+                    sqlite3_errmsg(sql->db);
+                static_cast<void>(sqlite3_finalize(sql->stmt));
+                sql->stmt = nullptr;
+                ret = 1;
+                goto exit;
+            }
+
+            if (sqlite3_step(sql->stmt) != SQLITE_DONE)
+            {
+                static_cast<void>(sqlite3_finalize(sql->stmt));
+                sql->stmt = nullptr;
+                ret = 1;
+                goto exit;
+            }
+
+            static_cast<void>(sqlite3_finalize(sql->stmt));
+            sql->stmt = nullptr;
         }
     }
 
+exit:
     if (fs) FcFontSetDestroy(fs);
-    return 0;
+    return ret;
 }
