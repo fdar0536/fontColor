@@ -8,7 +8,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(FC_NAME           FontColor)
 set(FC_VERSION_MAJOR  1)
 set(FC_VERSION_MINOR  0)
-set(FC_VERSION_STATUS Dev)
+set(FC_VERSION_STATUS)
 configure_file(config.h.in config.h @ONLY)
 
 if (UNIX)
