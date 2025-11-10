@@ -74,6 +74,6 @@ target_link_libraries(FontColor
 )
 
 if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
-    target_link_options(FlexFlowGUI PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-    target_compile_options(FlexFlowGUI PRIVATE $<$<CONFIG:Debug>:/ZI>)
+    target_link_options(FontColor PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+    target_compile_options(FontColor PRIVATE $<$<CONFIG:Debug>:/ZI>)
 endif (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
