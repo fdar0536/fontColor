@@ -94,7 +94,11 @@ QString FontDatabase::getFontFileName(int input)
         return res;
     }
 
+#ifdef _WIN32
+    QStringList list = res.split("\\");
+#else
     QStringList list = res.split("/");
+#endif
     return list.at(list.count() - 1);
 }
 
