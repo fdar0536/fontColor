@@ -32,8 +32,8 @@ FontDatabase::FontDatabase(QObject *parent) :
 
     init();
 
-    connect(m_sql, SIGNAL(done(QList<QString> &, QList<int> &)),
-            this, SLOT(handle_sorting_done(QList<QString> &, QList<int> &)));
+    connect(m_sql, &SQLHandler::done,
+            this, &FontDatabase::handle_sorting_done);
 }
 
 FontDatabase::~FontDatabase()
@@ -153,7 +153,8 @@ QModelIndex FontDatabase::parent(const QModelIndex &) const
 }
 
 //public slots
-void FontDatabase::handle_sorting_done(QList<QString> &fontFamilyList, QList<int> &fontIndex)
+void FontDatabase::handle_sorting_done(QList<QString> &fontFamilyList,
+                                       QList<int> &fontIndex)
 {
     if (!m_sql->getRes())
     {

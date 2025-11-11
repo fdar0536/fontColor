@@ -17,8 +17,12 @@ ApplicationWindow
     height: 300
     title: qsTr("fontColor for TCAX")
 
-    property bool initialized: false
+    minimumWidth: width
+    maximumWidth: width
+    minimumHeight: height
+    maximumHeight: height
 
+    property bool initialized: false
     FontDatabase
     {
         id: fontDatabase
@@ -163,10 +167,12 @@ ApplicationWindow
         y: 20
         width: parent.width - x * 2
         height: parent.height - y * 2
+        anchors.fill: parent
 
         ColumnLayout
         {
             spacing: 10
+            anchors.fill: parent
 
             TitleText
             {
@@ -180,7 +186,7 @@ ApplicationWindow
                     id: fontComboBox
                     currentIndex: 0
                     Layout.alignment: Qt.AlignLeft
-                    implicitContentWidthPolicy: ComboBox.WidestText
+                    Layout.fillWidth: true
 
                     model: fontDatabase
 
