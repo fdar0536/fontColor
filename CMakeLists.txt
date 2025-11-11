@@ -46,11 +46,11 @@ find_package(Fontconfig REQUIRED)
 find_package(SQLite3 REQUIRED)
 set(QT_QML_GENERATE_QMLLS_INI on)
 
-qt_add_executable(FC_NAME
+qt_add_executable(FontColor
     main.cpp
 )
 
-qt_add_qml_module(FC_NAME
+qt_add_qml_module(FontColor
     URI FC
     QML_FILES
         main.qml
@@ -72,7 +72,7 @@ qt_add_qml_module(FC_NAME
         RESOURCES config.h.in
 )
 
-target_link_libraries(FC_NAME
+target_link_libraries(FontColor
     PRIVATE
 
     Qt6::Widgets
@@ -83,6 +83,6 @@ target_link_libraries(FC_NAME
 )
 
 if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
-    target_link_options(FC_NAME PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-    target_compile_options(FC_NAME PRIVATE $<$<CONFIG:Debug>:/ZI>)
+    target_link_options(FontColor PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+    target_compile_options(FontColor PRIVATE $<$<CONFIG:Debug>:/ZI>)
 endif (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
